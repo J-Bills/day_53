@@ -1,8 +1,8 @@
 import requests
 from dataclasses import dataclass, fields
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver import By, Keys, ActionChains
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selectolax.parser import HTMLParser
 
 
@@ -16,9 +16,9 @@ class RentalListing:
 # WIll be scraping the zillow snapshot and return list of rentallistings that are structured by our dataclass
 class zillowScraper():
     def __init__(self) -> None:
-        self.response = requests.get('https://appbrewery.github.io/Zillow-Clone/')
-        self.response.raise_for_status()
-        self.html = HTMLParser(self.response.text)
+        response = requests.get('https://appbrewery.github.io/Zillow-Clone/')
+        response.raise_for_status()
+        self.html = HTMLParser(response.text)
         self.listings = list()
     
     def scrapePage(self) -> list:
@@ -42,5 +42,18 @@ class googleFormInput():
         pass
     
     #Will loop through and input all data returned from scraping
-    def rentalListingInfo(self) -> None:
-        pass
+    def rentalListingInfo(self, rental_listings) -> None:
+        for field in fields(rental_listings):
+            field_name = field.name
+            field_value = getattr(rental_listings, field_name)
+            input = self.driver.find_element()
+            ActionChains(self.driver)\
+            .move_to_element(input)\
+            .pause(1)\
+            .send_keys(field_value)\
+            .send_keys(Keys.TAB)\
+            .send_keys(field_value)\
+            .send_keys(Keys.TAB)\
+            .send_keys(field_value)\
+            .send_keys(Keys.TAB)\
+            .perform()
