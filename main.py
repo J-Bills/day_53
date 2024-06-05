@@ -25,6 +25,19 @@ class zillowScraper():
         self.listings = list()
     
     def scrapePage(self) -> list:
+        links = [node.attrs['href'] for node in self.html.css('a.StyledPropertyCardDataArea-anchor')]
+        addys = [node.text().strip() for node in self.html.css('address')]
+        monies = [node.text() for node in self.html.css('span.PropertyCardWrapper__StyledPriceLine')]
+        
+        data = zip(links, addys, monies)
+        
+        for link,addys,monies in data:
+            rental_listing = RentalListing(
+                url = link,
+                price = monies,
+                address= addys
+            )
+            self.listings.append(rental_listing)
         return self.listings
 
 class googleFormInput():
@@ -52,6 +65,14 @@ class googleFormInput():
             submit = self.driver.find_element(By.XPATH, '//span[text()="Submit"]').click()
             self.driver.implicitly_wait(5)
             refresh = self.driver.find_element(By.TAG_NAME, 'a').click()
+            self.driver.implicitly_wait(5)
     print('finished')
-sum = googleFormInput()
-sum.inputRentalListingInfo(rental_listings=placeholder)
+
+def main():
+    zillow_scraper = zillowScraper()
+    scraped_listings = zillow_scraper.scrapePage()
+    google_form = googleFormInput()
+    google_form.inputRentalListingInfo(scraped_listings)
+    
+if __name__ == "__main__":
+    main()
