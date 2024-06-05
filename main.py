@@ -1,7 +1,10 @@
+from config import credential_dict
 import requests
 from dataclasses import dataclass, fields
 from selenium import webdriver
-from selenium.webdriver import By, Keys, ActionChains
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selectolax.parser import HTMLParser
 
@@ -26,34 +29,29 @@ class zillowScraper():
 
 class googleFormInput():
     def __init__(self) -> None:
-        self.chrome_options = self.webdriver.ChromeOptions()
+        self.chrome_options = webdriver.ChromeOptions()
         self.chrome_options.add_experimental_option('detach', True)
         #chrome_options.add_argument('--headless')
         self.driver = webdriver.Chrome(options=self.chrome_options)
-        self.driver.get('https://doc.google.com/forms/')
-        
-    def login(self) -> None:
-        pass
-    
-    def createForm(self) -> None:
-        pass
-    
-    def inputData(self) -> None:
-        pass
-    
+        self.driver.get('https://forms.gle/RYsCCz1QF3jSkJJPA')
+            
     #Will loop through and input all data returned from scraping
-    def rentalListingInfo(self, rental_listings) -> None:
-        for field in fields(rental_listings):
-            field_name = field.name
-            field_value = getattr(rental_listings, field_name)
-            input = self.driver.find_element()
-            ActionChains(self.driver)\
-            .move_to_element(input)\
-            .pause(1)\
-            .send_keys(field_value)\
-            .send_keys(Keys.TAB)\
-            .send_keys(field_value)\
-            .send_keys(Keys.TAB)\
-            .send_keys(field_value)\
-            .send_keys(Keys.TAB)\
-            .perform()
+    def inputRentalListingInfo(self, rental_listings) -> None:
+        for listing in rental_listings:
+            for field in fields(listing):
+                field_name = field.name
+                field_value = getattr(listing, field_name)
+                input = self.driver.find_element()
+                ActionChains(self.driver)\
+                .move_to_element(input)\
+                .pause(1)\
+                .send_keys(field_value)\
+                .pause(1)\
+                .send_keys(Keys.TAB)\
+                .pause(1)
+            submit = self.driver.find_element(By.XPATH, '//span[text()="Submit"]').click()
+            self.driver.implicitly_wait(5)
+            refresh = self.driver.find_element(By.TAG_NAME, 'a').click()
+    print('finished')
+sum = googleFormInput()
+sum.inputRentalListingInfo(rental_listings=placeholder)
